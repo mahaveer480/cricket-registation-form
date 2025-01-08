@@ -79,7 +79,7 @@ const RegistrationForm = () => {
         }}
       >
         <p>
-          Please complete your registration by sending your payment of <strong>{totalFee} Rupees</strong> to this number: <strong>03363104670</strong>.
+          Please complete your registration by sending your payment of <strong>{totalFee} Rupees</strong> to this number: <strong>3492439953</strong>.
         </p>
         <p>
           After making the payment, share the following items via WhatsApp to the same number:
