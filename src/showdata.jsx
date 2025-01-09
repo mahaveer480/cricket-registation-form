@@ -123,73 +123,11 @@ const DisplayData = () => {
     }
   };
 
-  // Prepare chart data
-  const prepareChartData = () => {
-    const classCounts = {};
-    approvedPlayers.forEach((player) => {
-      classCounts[player.class] = (classCounts[player.class] || 0) + 1;
-    });
-
-    return {
-      labels: Object.keys(classCounts),
-      datasets: [
-        {
-          label: "Number of Approved Players by Class",
-          data: Object.values(classCounts),
-          backgroundColor: "rgba(75, 192, 192, 0.5)",
-          borderColor: "rgba(75, 192, 192, 1)",
-          borderWidth: 1,
-        },
-      ],
-    };
-  };
-
   return (
     <div className="container">
-      {/* Show Player Counts */}
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <h3>Registered Players: {registrations.length}</h3>
-        <h3>Approved Players: {approvedPlayers.length}</h3>
-      </div>
+      <h2 style={{ textAlign: "center" }}>Player Registrations</h2>
 
-      {/* Show Approved Players */}
-      <h2>Approved Players</h2>
-      <div className="box-container">
-        {approvedPlayers.map((player) => (
-          <div key={player.id} className="box">
-            <h3>{player.name}</h3>
-            <p>
-              <strong>Father's Name:</strong> {player.fatherName}
-            </p>
-            <p>
-              <strong>Class:</strong> {player.class}
-            </p>
-            <p>
-              <strong>School:</strong> {player.school}
-            </p>
-            <p>
-              <strong>Role:</strong> {player.role}
-            </p>
-            <p>
-              <strong>Total Fee:</strong> {player.totalFee} Rupees
-            </p>
-            <p>
-              <strong>Timestamp:</strong>{" "}
-              {player.timestamp?.toDate().toLocaleString() || "N/A"}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Show Chart of Approved Players */}
-      {approvedPlayers.length > 0 && (
-        <div style={{ marginTop: "30px" }}>
-          <h2>Approved Players Chart</h2>
-          <Bar data={prepareChartData()} />
-        </div>
-      )}
-
-      {/* Admin Login Form if not an Admin */}
+      {/* Admin Login Form */}
       {!isAdmin && (
         <form
           onSubmit={handleAdminLogin}
@@ -199,7 +137,7 @@ const DisplayData = () => {
             textAlign: "center",
           }}
         >
-          <h2>Admin Login</h2>
+          <h3>Admin Login</h3>
           <input
             type="text"
             placeholder="Username"
@@ -226,64 +164,45 @@ const DisplayData = () => {
         </form>
       )}
 
-      {/* Show Registered Players for Admin */}
-      {isAdmin && (
-        <>
-          <h2>Registered Players (Admin View)</h2>
-          <div className="box-container">
-            {registrations.map((player) => (
-              <div key={player.id} className="box">
-                <h3>{player.name}</h3>
-                <p>
-                  <strong>Father's Name:</strong> {player.fatherName}
-                </p>
-                <p>
-                  <strong>Class:</strong> {player.class}
-                </p>
-                <p>
-                  <strong>School:</strong> {player.school}
-                </p>
-                <p>
-                  <strong>Role:</strong> {player.role}
-                </p>
-                <p>
-                  <strong>Total Fee:</strong> {player.totalFee} Rupees
-                </p>
-                <p>
-                  <strong>Timestamp:</strong>{" "}
-                  {player.timestamp?.toDate().toLocaleString() || "N/A"}
-                </p>
-                <div>
-                  <button
-                    onClick={() => handleApprove(player.id)}
-                    style={{
-                      padding: "5px 10px",
-                      marginRight: "10px",
-                      backgroundColor: "green",
-                      color: "white",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => handleDelete(player.id)}
-                    style={{
-                      padding: "5px 10px",
-                      backgroundColor: "red",
-                      color: "white",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
+      {/* Display Registered Players in a Table */}
+      {registrations.length > 0 && (
+        <div>
+          <h3 style={{ textAlign: "center" }}>Registered Players</h3>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th style={{ border: "1px solid black", padding: "8px" }}>Name</th>
+                <th style={{ border: "1px solid black", padding: "8px" }}>
+                  Father's Name
+                </th>
+                <th style={{ border: "1px solid black", padding: "8px" }}>Class</th>
+                <th style={{ border: "1px solid black", padding: "8px" }}>School</th>
+                <th style={{ border: "1px solid black", padding: "8px" }}>Role</th>
+                <th style={{ border: "1px solid black", padding: "8px" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+  {registrations.map((player) => (
+    <tr key={player.id}>
+      <td data-label="Name">{player.name}</td>
+      <td data-label="Father's Name">{player.fatherName}</td>
+      <td data-label="Class">{player.class}</td>
+      <td data-label="School">{player.school}</td>
+      <td data-label="Role">{player.role}</td>
+      <td data-label="Actions">
+        {isAdmin && (
+          <>
+            <button onClick={() => handleApprove(player.id)}>Approve</button>
+            <button onClick={() => handleDelete(player.id)}>Delete</button>
+          </>
+        )}
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+          </table>
+        </div>
       )}
     </div>
   );
