@@ -16,7 +16,7 @@ const Footer = () => {
           <h5>Contact Us</h5>
           <ul>
             <li><strong>Name:</strong> Mahaveer Ramani</li>
-            <li><strong>Phone:</strong> 03363104670</li>
+            <li><strong>Phone:</strong> 03492439953</li>
             <li><strong>Email:</strong> ramanimahaveer4@gmail.com</li>
             <li><strong>Location:</strong> mithi tharaparkar opposite of north coloney mithi</li>
           </ul>
