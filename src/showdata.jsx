@@ -2,31 +2,16 @@ import React, { useEffect, useState } from "react";
 import db from "./firebase";
 import {
   collection,
-  getDocs,
+  onSnapshot,
   deleteDoc,
   doc,
   setDoc,
   getDoc,
-  onSnapshot,
 } from "firebase/firestore";
-import { Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
 import "./displayData.css";
 
-// Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
 const DisplayData = () => {
-  const [registrations, setRegistrations] = useState([]); // Store unapproved players
-  const [approvedPlayers, setApprovedPlayers] = useState([]); // Store approved players
+  const [registrations, setRegistrations] = useState([]); // Store player registrations
   const [isAdmin, setIsAdmin] = useState(false); // Admin login state
   const [adminCredentials, setAdminCredentials] = useState({
     username: "",
@@ -36,7 +21,6 @@ const DisplayData = () => {
   // Fetch data from Firestore using real-time listeners
   useEffect(() => {
     const fetchData = () => {
-      // Listen for changes in 'registrations' collection
       const registrationsUnsub = onSnapshot(
         collection(db, "registrations"),
         (querySnapshot) => {
@@ -51,26 +35,7 @@ const DisplayData = () => {
         }
       );
 
-      // Listen for changes in 'approved_players' collection
-      const approvedPlayersUnsub = onSnapshot(
-        collection(db, "approved_players"),
-        (querySnapshot) => {
-          const data = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setApprovedPlayers(data);
-        },
-        (error) => {
-          console.error("Error fetching approved players:", error.message);
-        }
-      );
-
-      // Cleanup listeners on component unmount
-      return () => {
-        registrationsUnsub();
-        approvedPlayersUnsub();
-      };
+      return () => registrationsUnsub(); // Cleanup listener
     };
 
     fetchData();
@@ -88,7 +53,7 @@ const DisplayData = () => {
     }
   };
 
-  // Approve a player and move their data to 'approved_players'
+  // Approve a player and move to 'approved_players'
   const handleApprove = async (id) => {
     try {
       const docRef = doc(db, "registrations", id);
@@ -100,14 +65,9 @@ const DisplayData = () => {
       }
 
       const playerData = docSnap.data();
-
-      // Add player data to 'approved_players' collection
       await setDoc(doc(db, "approved_players", id), playerData);
-
-      // Remove player from 'registrations' collection
-      await deleteDoc(docRef);
-
-      alert("Player approved and moved to approved players!");
+      await deleteDoc(docRef); // Remove from registrations
+      alert("Player approved!");
     } catch (error) {
       console.error("Error approving player:", error.message);
     }
@@ -116,7 +76,7 @@ const DisplayData = () => {
   // Delete a player from 'registrations'
   const handleDelete = async (id) => {
     try {
-      await deleteDoc(doc(db, "registrations", id)); // Remove from registrations
+      await deleteDoc(doc(db, "registrations", id));
       alert("Player deleted successfully!");
     } catch (error) {
       console.error("Error deleting player:", error.message);
@@ -132,7 +92,7 @@ const DisplayData = () => {
         <form
           onSubmit={handleAdminLogin}
           style={{
-            maxWidth: "400px",
+            maxWidth: "300px",
             margin: "20px auto",
             textAlign: "center",
           }}
@@ -164,7 +124,7 @@ const DisplayData = () => {
         </form>
       )}
 
-      {/* Display Registered Players in a Table */}
+      {/* Display Registered Players */}
       {registrations.length > 0 && (
         <div>
           <h3 style={{ textAlign: "center" }}>Registered Players</h3>
@@ -172,35 +132,45 @@ const DisplayData = () => {
             <thead>
               <tr>
                 <th style={{ border: "1px solid black", padding: "8px" }}>Name</th>
-                <th style={{ border: "1px solid black", padding: "8px" }}>
-                  Father's Name
-                </th>
-                <th style={{ border: "1px solid black", padding: "8px" }}>Class</th>
-                <th style={{ border: "1px solid black", padding: "8px" }}>School</th>
-                <th style={{ border: "1px solid black", padding: "8px" }}>Role</th>
-                <th style={{ border: "1px solid black", padding: "8px" }}>Actions</th>
+                {isAdmin && (
+                  <>
+                    <th style={{ border: "1px solid black", padding: "8px" }}>
+                      Father's Name
+                    </th>
+                    <th style={{ border: "1px solid black", padding: "8px" }}>Class</th>
+                    <th style={{ border: "1px solid black", padding: "8px" }}>
+                      School
+                    </th>
+                    <th style={{ border: "1px solid black", padding: "8px" }}>Role</th>
+                    <th style={{ border: "1px solid black", padding: "8px" }}>Actions</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
-  {registrations.map((player) => (
-    <tr key={player.id}>
-      <td data-label="Name">{player.name}</td>
-      <td data-label="Father's Name">{player.fatherName}</td>
-      <td data-label="Class">{player.class}</td>
-      <td data-label="School">{player.school}</td>
-      <td data-label="Role">{player.role}</td>
-      <td data-label="Actions">
-        {isAdmin && (
-          <>
-            <button onClick={() => handleApprove(player.id)}>Approve</button>
-            <button onClick={() => handleDelete(player.id)}>Delete</button>
-          </>
-        )}
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+              {registrations.map((player) => (
+                <tr key={player.id}>
+                  <td
+                    data-label="Name"
+                    style={{ border: "1px solid black", padding: "8px" }}
+                  >
+                    {player.name}
+                  </td>
+                  {isAdmin && (
+                    <>
+                      <td data-label="Father's Name">{player.fatherName}</td>
+                      <td data-label="Class">{player.class}</td>
+                      <td data-label="School">{player.school}</td>
+                      <td data-label="Role">{player.role}</td>
+                      <td data-label="Actions">
+                        <button onClick={() => handleApprove(player.id)}>Approve</button>
+                        <button onClick={() => handleDelete(player.id)}>Delete</button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       )}
